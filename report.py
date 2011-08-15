@@ -61,7 +61,9 @@ class console:
          codes["fuscia"]     = codes["fuchsia"]
          codes["white"]      = codes["bold"]
     """
-    def __getattr__(self,name):
+    def __getattr__(self, name):
+        if name.startswith('_'):
+            raise AttributeError
         def func(string, _print=False):
             z = console_color(name,string)
             if _print:
@@ -106,7 +108,8 @@ def getcaller(level=2):
     file = file_name
     self = flocals.get('self',None)
     kls  = self and self.__class__
-    func = self and getattr(self,func_name)
+    try: func = self and getattr(self,func_name)
+    except AttributeError: func = func_name+'[nested]'
     return dict(file=file_name,
                 kls=kls,
                 self=self,
