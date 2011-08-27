@@ -131,33 +131,36 @@ def whosdaddy():
         file_name = os.path.sep.join(file_parts[-4:])
     return ' + ' + console.darkblue(file_name) + ' --  ' + console.blue(header)
 
-def report(*args, **kargs):
-    """ reporting mechanism with inspection and colorized output """
-    global console
-    import sys
-    stream = kargs.pop('stream', sys.stdout)
-    header = kargs.pop('header', None)
-    full = False
-    if header is None: header=whosdaddy(); full=True
-    print header
-    if full:
-        flush = kargs.pop('flush', False)
-        if len(args)==1:
-            _args = str(args[0])
-            # if kargs appears to be a formatting string for the one and only
-            # argument, then use it as such and set kargs to empty so it wont
-            # be printed
-            if len([ k for k in kargs if '{'+k+'}' in _args]) == len(kargs):
-                _args=_args.format(**kargs)
-                kargs={}
-            _args=console.darkteal(_args)
-        else:
-            _args = 'args=' + console.color(str(args)).strip()
-        _args = _args +'\n' if _args else _args
-        if kargs:
-            _kargs =  console.color(str(kargs))
-        else:
-            _kargs=''
-        _kargs = _kargs +'\n' if _kargs else _kargs
-        sep = '    '
-        stream.write( sep + _args + sep + _kargs)
+def getReporter(label=True):
+    def report(*args, **kargs):
+        """ reporting mechanism with inspection and colorized output """
+        stream = kargs.pop('stream', sys.stdout)
+        header = kargs.pop('header', '')
+        full = False
+        full=True
+        if label and header is '': header=whosdaddy();
+        if header: print header
+        if full:
+            flush = kargs.pop('flush', False)
+            if len(args)==1:
+                _args = str(args[0])
+                # if kargs appears to be a formatting string for the one and only
+                # argument, then use it as such and set kargs to empty so it wont
+                # be printed
+                if len([ k for k in kargs if '{'+k+'}' in _args]) == len(kargs):
+                    _args = _args.format(**kargs)
+                    kargs={}
+                _args = console.darkteal(_args)
+            else:
+                _args = 'args=' + console.color(str(args)).strip()
+            _args = _args +'\n' if _args else _args
+            if kargs:
+                _kargs =  console.color(str(kargs))
+            else:
+                _kargs=''
+            _kargs = _kargs +'\n' if _kargs else _kargs
+            sep = '    '
+            stream.write( sep + _args + sep + _kargs)
+    return report
+
+report = getReporter()
