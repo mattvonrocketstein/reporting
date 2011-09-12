@@ -51,15 +51,15 @@ colorize2 = lambda code: highlight(code, plex, hfom2)
 class console:
     """ from the pygments code--
 
-         dark_colors  = ["black", "darkred", "darkgreen", "brown", "darkblue",
-                         "purple", "teal", "lightgray"]
-         light_colors = ["darkgray", "red", "green", "yellow", "blue",
-                         "fuchsia", "turquoise", "white"]
+        dark_colors  = ["black", "darkred", "darkgreen", "brown", "darkblue",
+            "purple", "teal", "lightgray"]
+        light_colors = ["darkgray", "red", "green", "yellow", "blue",
+            "fuchsia", "turquoise", "white"]
 
-         codes["darkteal"]   = codes["turquoise"]
-         codes["darkyellow"] = codes["brown"]
-         codes["fuscia"]     = codes["fuchsia"]
-         codes["white"]      = codes["bold"]
+        codes["darkteal"]   = codes["turquoise"]
+        codes["darkyellow"] = codes["brown"]
+        codes["fuscia"]     = codes["fuchsia"]
+        codes["white"]      = codes["bold"]
     """
     def __getattr__(self, name):
         if name.startswith('_'):
@@ -108,8 +108,12 @@ def getcaller(level=2):
     file = file_name
     self = flocals.get('self',None)
     kls  = self and self.__class__
-    try: func = self and getattr(self,func_name)
-    except AttributeError: func = func_name+'[nested]'
+    kls_func = getattr(kls, func_name, None)
+    if type(kls_func)==property:
+        func = kls_func
+    else:
+        try: func = self and getattr(self,func_name)
+        except AttributeError: func = func_name+'[nested]'
     return dict(file=file_name,
                 kls=kls,
                 self=self,
@@ -131,36 +135,35 @@ def whosdaddy():
         file_name = os.path.sep.join(file_parts[-4:])
     return ' + ' + console.darkblue(file_name) + ' --  ' + console.blue(header)
 
-def getReporter(label=True):
-    def report(*args, **kargs):
-        """ reporting mechanism with inspection and colorized output """
-        stream = kargs.pop('stream', sys.stdout)
-        header = kargs.pop('header', '')
-        full = False
-        full=True
-        if label and header is '': header=whosdaddy();
-        if header: print header
-        if full:
-            flush = kargs.pop('flush', False)
-            if len(args)==1:
-                _args = str(args[0])
-                # if kargs appears to be a formatting string for the one and only
-                # argument, then use it as such and set kargs to empty so it wont
-                # be printed
-                if len([ k for k in kargs if '{'+k+'}' in _args]) == len(kargs):
-                    _args = _args.format(**kargs)
-                    kargs={}
-                _args = console.darkteal(_args)
-            else:
-                _args = 'args=' + console.color(str(args)).strip()
-            _args = _args +'\n' if _args else _args
-            if kargs:
-                _kargs =  console.color(str(kargs))
-            else:
-                _kargs=''
-            _kargs = _kargs +'\n' if _kargs else _kargs
-            sep = '    '
-            stream.write( sep + _args + sep + _kargs)
+def report(*args, **kargs):
+    """ reporting mechanism with inspection and colorized output """
+    stream = kargs.pop('stream', sys.stdout)
+    header = kargs.pop('header', '')
+    full = False
+    full=True
+    header=whosdaddy();
+    print header
+    if full:
+        if len(args)==1:
+            _args = str(args[0])
+            # if kargs appears to be a formatting string for the one and only
+            # argument, then use it as such and set kargs to empty so it wont
+            # be printed
+            if len([ k for k in kargs if '{'+k+'}' in _args]) == len(kargs):
+                _args = _args.format(**kargs)
+                kargs = {}
+            _args = console.darkteal(_args.strip())
+        else:
+            _args = 'args=' + console.color(str(args)).strip()
+        _args = _args + '\n' if _args else _args
+        _kargs =  console.color(str(kargs)) if kargs else ''
+        _kargs = _kargs +'\n' if _kargs else _kargs
+        sep = '    '
+        stream.write( sep + _args + sep + _kargs)
+        stream.flush()
+
+def getReporter(**unused):
+    """ TODO: return a partial function """
     return report
 
 report = getReporter()
