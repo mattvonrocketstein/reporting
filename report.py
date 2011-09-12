@@ -139,12 +139,10 @@ def report(*args, **kargs):
     """ reporting mechanism with inspection and colorized output """
     stream = kargs.pop('stream', sys.stdout)
     header = kargs.pop('header', '')
-    full = False
-    full=True
     header=whosdaddy();
     print header
-    if full:
-        if len(args)==1:
+
+    if len(args)==1:
             _args = str(args[0])
             # if kargs appears to be a formatting string for the one and only
             # argument, then use it as such and set kargs to empty so it wont
@@ -153,14 +151,13 @@ def report(*args, **kargs):
                 _args = _args.format(**kargs)
                 kargs = {}
             _args = console.darkteal(_args.strip())
-        else:
+    else:
             _args = 'args=' + console.color(str(args)).strip()
-        _args = _args + '\n' if _args else _args
-        _kargs =  console.color(str(kargs)) if kargs else ''
-        _kargs = _kargs +'\n' if _kargs else _kargs
-        sep = '    '
-        stream.write( sep + _args + sep + _kargs)
-        stream.flush()
+    _args = _args + '\n' if _args else _args
+    _kargs =  console.color(str(kargs)) if kargs else ''
+    _kargs = _kargs +'\n' if _kargs else _kargs
+    sep = '    '
+    stream.write( sep + _args + sep + _kargs)
 
 def getReporter(**unused):
     """ TODO: return a partial function """
