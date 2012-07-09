@@ -38,8 +38,9 @@ import inspect
 import pygments
 from pygments import highlight
 from pygments.lexers import PythonLexer, PythonTracebackLexer
-from pygments.formatters import HtmlFormatter,Terminal256Formatter
+from pygments.formatters import HtmlFormatter, Terminal256Formatter
 from pygments.console import colorize as console_color
+
 
 plex  = PythonLexer()
 tblex = PythonTracebackLexer()
@@ -47,6 +48,20 @@ hfom  = HtmlFormatter()
 hfom2 = HtmlFormatter(cssclass="autumn")
 colorize  = lambda code: highlight(code, plex, hfom)
 colorize2 = lambda code: highlight(code, plex, hfom2)
+
+if not sys.stdout.isatty():
+    console_color = lambda name,string: string
+
+from pygments.console import codes as console_codes
+#c_codes = console_codes.items()
+#c_codes.sort(lambda x,y: cmp(len(x[1]),len(y[1])))
+#c_codes.reverse()
+def console2html(txt):
+    #txt = txt.replace(console_codes['reset'],'</font>')
+    #for name, code in c_codes:
+    #    if all([name, name!='reset']):
+    #        txt=txt.replace(code, '<font color="{0}">'.format(name))
+    return txt.replace('\n', '<br/>')
 
 class console:
     """ from the pygments code--
@@ -61,11 +76,12 @@ class console:
         codes["fuscia"]     = codes["fuchsia"]
         codes["white"]      = codes["bold"]
     """
+    html = staticmethod(console2html)
     def __getattr__(self, name):
         if name.startswith('_'):
             raise AttributeError
         def func(string, _print=False):
-            z = console_color(name,string)
+            z = console_color(name, string)
             if _print:
                 print z
             return z
@@ -78,9 +94,12 @@ class console:
     def colortb(string):
         return highlight(string, tblex, Terminal256Formatter())
 
-    @staticmethod
-    def color(string):
-        return highlight(string, plex, Terminal256Formatter()).strip()
+    if sys.stdout.isatty():
+        def color(string):
+            return highlight(string, plex, Terminal256Formatter()).strip()
+    else:
+        color = lambda string:string
+    color = staticmethod(color)
 
     @staticmethod
     def draw_line(msg='', length=80, display=True):
@@ -107,7 +126,7 @@ def getcaller(level=2):
     func_name = x[3]
     file = file_name
     self = flocals.get('self',None)
-    kls  = self and self.__class__
+    kls  = (self is not None) and self.__class__
     kls_func = getattr(kls, func_name, None)
     if type(kls_func)==property:
         func = kls_func
@@ -148,7 +167,10 @@ def report(*args, **kargs):
             # argument, then use it as such and set kargs to empty so it wont
             # be printed
             if len([ k for k in kargs if '{'+k+'}' in _args]) == len(kargs):
-                _args = _args.format(**kargs)
+                try:
+                    _args = _args.format(**kargs)
+                except KeyError:
+                    pass
                 kargs = {}
             _args = console.darkteal(_args.strip())
     else:
@@ -158,9 +180,11 @@ def report(*args, **kargs):
     _kargs = _kargs +'\n' if _kargs else _kargs
     sep = '    '
     stream.write( sep + _args + sep + _kargs)
+    stream.flush()
 
 def getReporter(**unused):
     """ TODO: return a partial function """
     return report
 
 report = getReporter()
+report.console = console
