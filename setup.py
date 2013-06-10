@@ -7,7 +7,7 @@ from distutils.core import setup
 
 setup(
     name         ='report',
-    version      = '.1',
+    version      = '.11',
     description  = 'patterns in reporting',
     author       = 'mvr',
     url          = 'https://github.com/mattvonrocketstein/reporting',
