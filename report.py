@@ -194,3 +194,23 @@ def getReporter(**unused):
 
 report = getReporter()
 report.console = console
+
+
+class Reporter(object):
+    """ syntactic sugar for reporting """
+    def __init__(self, label=u'>>'):
+        self.label = label
+
+    def __getattr__(self, label):
+        return self.__class__(label)
+
+    def _report(self,msg):
+        print colorize('{red}' + self.label + '{normal}: ' + msg)
+
+    def _warn(self,msg):
+        return self._report(msg)
+
+    def __call__(self, msg):
+        return self._report(msg)
+
+simple = Reporter()
