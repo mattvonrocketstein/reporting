@@ -205,7 +205,13 @@ class Reporter(object):
         return self.__class__(label)
 
     def _report(self,msg):
-        print colorize('{red}' + self.label + '{normal}: ' + msg)
+        def mycolorize(msg):
+            """ """
+            # .format() is not used because KeyError might happen
+            # when using report(msg+str(some_dictionary))
+            return msg.replace('{red}',console_codes['red']).replace(
+                '{normal}', console_color['reset'])
+        print mycolorize('{red}' + self.label + '{normal}: ' + msg)
 
     def _warn(self,msg):
         return self._report(msg)
