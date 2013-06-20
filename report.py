@@ -142,7 +142,7 @@ def whosdaddy(frames_back=3):
     file_parts  = file_name.split(os.path.sep)
     if len(file_parts) > 4:
         file_name = os.path.sep.join(file_parts[-4:])
-    return file_name,header
+    return file_name, header
     #return ' + ' + console.darkblue(file_name) + ' --  ' + console.blue(header)
 
 def report(*args, **kargs):
@@ -150,7 +150,7 @@ def report(*args, **kargs):
     stream = kargs.pop('stream', sys.stdout)
     frames_back = kargs.pop('frames_back', 3)
     header = kargs.pop('header', '')
-    #_header = whosdaddy(frames_back);
+    _header = "" #whosdaddy(frames_back);
     fname, caller = whosdaddy(frames_back)
     colored_header = ' ' + console.darkblue(fname) + ' --  ' + console.blue(caller)
     extra_length = len(' + '+' --  ') #ugh
