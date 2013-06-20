@@ -2,23 +2,26 @@
 """
 import os
 import sys
+import copy
 import inspect
 from collections import namedtuple
 from datetime import datetime, timedelta
 import pygments
 from pygments import highlight
-from pygments.lexers import PythonLexer, PythonTracebackLexer
+from pygments.lexers import JavascriptLexer, PythonLexer, PythonTracebackLexer
 from pygments.formatters import HtmlFormatter, Terminal256Formatter
 from pygments.console import colorize as console_color
 from pygments.console import codes as console_codes
 
 plex  = PythonLexer()
+jlex  = JavascriptLexer()
 tblex = PythonTracebackLexer()
 hfom  = HtmlFormatter()
 hfom2 = HtmlFormatter(cssclass="autumn")
-colorize  = lambda code: highlight(code, plex, hfom)
-colorize2 = lambda code: highlight(code, plex, hfom2)
+highlight = copy.copy(highlight)
 ROW_LEN_CACHE = dict(timestamp=None, stdout_row_length=None)
+highlight.javascript = lambda code: highlight(code, jlex, Terminal256Formatter())
+highlight.python = lambda code: highlight(code, plex, Terminal256Formatter())
 
 if not sys.stdout.isatty():
     # let's not work too hard if there is no one
@@ -194,7 +197,7 @@ def getReporter(**unused):
 
 report = getReporter()
 report.console = console
-
+report.highlight = highlight
 
 class Reporter(object):
     """ syntactic sugar for reporting """
