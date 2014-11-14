@@ -14,6 +14,7 @@ from pygments.formatters import HtmlFormatter, Terminal256Formatter
 from pygments.console import colorize as console_color
 from pygments.console import codes as console_codes
 
+__version__ = version = '0.1'
 plex  = PythonLexer()
 jlex  = JavascriptLexer()
 tblex = PythonTracebackLexer()
@@ -185,10 +186,9 @@ def _report(*args, **kargs):
                 use_header = colored_header
     else:
         s = StringIO()
-        tmptmp = pprint(args, s)
-        tmptmp=s.getvalue()
-        #s.seek(0); tmptmp=s.read()
-        _args = 'args=' + console.color(tmptmp).strip()+'\n'
+        args_as_text = pprint(args, s)
+        args_as_text = s.getvalue()
+        _args = 'args=' + console.color(args_as_text).strip()+'\n'
     print use_header
     _args = _args + '\n' if _args else _args
     _kargs =  console.color(str(kargs)) if kargs else ''
