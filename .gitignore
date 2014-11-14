@@ -1,6 +1,10 @@
-TODO.txt
-*#
-#*
-.#*
+.tox
 *.pyc
-node/*
+*.egg-info
+lib/cortex/bin/tmp/*
+build/*
+dist/*
+.cache/*
+*#*
+.coverage
+*venv*/*

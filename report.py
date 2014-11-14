@@ -4,9 +4,10 @@ import os
 import sys
 import copy
 import inspect
-from collections import namedtuple
+from pprint import pprint
+from StringIO import StringIO
 from datetime import datetime, timedelta
-import pygments
+
 from pygments import highlight
 from pygments.lexers import JavascriptLexer, PythonLexer, PythonTracebackLexer
 from pygments.formatters import HtmlFormatter, Terminal256Formatter
@@ -22,6 +23,10 @@ highlight = copy.copy(highlight)
 ROW_LEN_CACHE = dict(timestamp=None, stdout_row_length=None)
 highlight.javascript = lambda code: highlight(code, jlex, Terminal256Formatter())
 highlight.python = lambda code: highlight(code, plex, Terminal256Formatter())
+
+class config(object):
+    """ """
+    MAX_FILE_COMPONENTS = 4
 
 if not sys.stdout.isatty():
     # let's not work too hard if there is no one
@@ -112,7 +117,6 @@ def getcaller(level=2):
     file_name = x[1]
     flocals = frame.f_locals
     func_name = x[3]
-    file = file_name
     self = flocals.get('self',None)
     kls  = (self is not None) and self.__class__
     kls_func = getattr(kls, func_name, None)
@@ -129,6 +133,12 @@ def getcaller(level=2):
                 func=func,
                 func_name=func_name)
 
+def truncate_file_path(file_name):
+    file_parts  = file_name.split(os.path.sep)
+    if len(file_parts) > 4:
+        file_name = os.path.sep.join(file_parts[-config.MAX_FILE_COMPONENTS:])
+    return file_name
+
 def whosdaddy(frames_back=3):
     """ displays information about the caller's caller """
     # if self is a named argument in the locals, print
@@ -139,18 +149,16 @@ def whosdaddy(frames_back=3):
     func_name   = caller_info['func_name']
     header      = (kls and kls.__name__) or '<??>'
     header      = header + '.' + func_name
-    file_parts  = file_name.split(os.path.sep)
-    if len(file_parts) > 4:
-        file_name = os.path.sep.join(file_parts[-4:])
+    file_name = truncate_file_path(file_name)
     return file_name, header
     #return ' + ' + console.darkblue(file_name) + ' --  ' + console.blue(header)
 
-def report(*args, **kargs):
+def _report(*args, **kargs):
     """ reporting mechanism with inspection and colorized output """
     stream = kargs.pop('stream', sys.stdout)
     frames_back = kargs.pop('frames_back', 3)
     header = kargs.pop('header', '')
-    _header = "" #whosdaddy(frames_back);
+    use_header = ""
     fname, caller = whosdaddy(frames_back)
     colored_header = ' ' + console.darkblue(fname) + ' --  ' + console.blue(caller)
     extra_length = len(' + '+' --  ') #ugh
@@ -170,19 +178,18 @@ def report(*args, **kargs):
             # whenever terminal is wide enough to show both,
             # mash up the header with the other output
             if (len(_args+' -- ') + header_length) < stdout_row_length():
-                _header = colored_header + ' -- ' + console.darkteal(_args)
+                use_header = colored_header + ' -- ' + console.darkteal(_args)
                 _args = ''
             else:
                 _args = '  '+console.darkteal(_args)
-                _header = colored_header
+                use_header = colored_header
     else:
-        from pprint import pprint
-        from StringIO import StringIO
         s = StringIO()
         tmptmp = pprint(args, s)
-        s.seek(0); tmptmp=s.read()
+        tmptmp=s.getvalue()
+        #s.seek(0); tmptmp=s.read()
         _args = 'args=' + console.color(tmptmp).strip()+'\n'
-    print _header
+    print use_header
     _args = _args + '\n' if _args else _args
     _kargs =  console.color(str(kargs)) if kargs else ''
     _kargs = _kargs +'\n' if _kargs else _kargs
@@ -193,7 +200,7 @@ def report(*args, **kargs):
 
 def getReporter(**unused):
     """ TODO: return a partial function """
-    return report
+    return _report
 
 report = getReporter()
 report.console = console
