@@ -14,7 +14,8 @@ from pygments.formatters import HtmlFormatter, Terminal256Formatter
 from pygments.console import colorize as console_color
 from pygments.console import codes as console_codes
 
-__version__ = version = '0.1'
+from goulash._inspect import getcaller
+
 plex  = PythonLexer()
 jlex  = JavascriptLexer()
 tblex = PythonTracebackLexer()
@@ -107,60 +108,33 @@ class console:
         return out
 console = console()
 
-def whoami():
-    """ gives information about the caller """
-    return inspect.stack()[1][3]
-
-def getcaller(level=2):
-    """ """
-    x = inspect.stack()[level]
-    frame = x[0]
-    file_name = x[1]
-    flocals = frame.f_locals
-    func_name = x[3]
-    self = flocals.get('self',None)
-    kls  = (self is not None) and self.__class__
-    kls_func = getattr(kls, func_name, None)
-    if type(kls_func)==property:
-        func = kls_func
-    else:
-        try:
-            func = self and getattr(self, func_name)
-        except AttributeError:
-            func = func_name+'[nested]'
-    return dict(file=file_name,
-                kls=kls,
-                self=self,
-                func=func,
-                func_name=func_name)
-
+# TODO: import this from goulash
 def truncate_file_path(file_name):
     file_parts  = file_name.split(os.path.sep)
     if len(file_parts) > 4:
         file_name = os.path.sep.join(file_parts[-config.MAX_FILE_COMPONENTS:])
     return file_name
 
-def whosdaddy(frames_back=3):
+
+def frames_back(N=3):
     """ displays information about the caller's caller """
-    # if self is a named argument in the locals, print
+    # if self is a named argument in the locals, use
     # the class name, otherwise admit that we don't know
-    caller_info = getcaller(frames_back)
-    kls         = caller_info['kls']
+    caller_info = getcaller(N)
+    kls         = caller_info['class']
     file_name   = caller_info['file']
     func_name   = caller_info['func_name']
     header      = (kls and kls.__name__) or '<??>'
     header      = header + '.' + func_name
     file_name = truncate_file_path(file_name)
     return file_name, header
-    #return ' + ' + console.darkblue(file_name) + ' --  ' + console.blue(header)
 
 def _report(*args, **kargs):
     """ reporting mechanism with inspection and colorized output """
     stream = kargs.pop('stream', sys.stdout)
-    frames_back = kargs.pop('frames_back', 3)
     header = kargs.pop('header', '')
     use_header = ""
-    fname, caller = whosdaddy(frames_back)
+    fname, caller = frames_back(kargs.pop('frames_back', 3))
     colored_header = ' ' + console.darkblue(fname) + ' --  ' + console.blue(caller)
     extra_length = len(' + '+' --  ') #ugh
     header_length = len(fname+caller)+extra_length
