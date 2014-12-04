@@ -1,4 +1,4 @@
-""" report.py
+""" report
 """
 import os
 import sys
@@ -71,6 +71,7 @@ class console:
         codes["white"]      = codes["bold"]
     """
     html = staticmethod(console2html)
+
     def __getattr__(self, name):
         if name.startswith('_'):
             raise AttributeError
