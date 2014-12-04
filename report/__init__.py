@@ -81,9 +81,6 @@ class console:
             return z
         return func
 
-    def vertical_space(self):
-        print
-
     @staticmethod
     def colortb(string):
         return highlight(string, tblex, Terminal256Formatter())
@@ -92,7 +89,7 @@ class console:
         def color(string):
             return highlight(string, plex, Terminal256Formatter()).strip()
     else:
-        color = lambda string:string
+        color = lambda string: string
     color = staticmethod(color)
 
     @staticmethod
@@ -100,8 +97,8 @@ class console:
         if msg and not msg.startswith(' '): msg = ' '+msg
         if msg and not msg.endswith(' '):   msg = msg+' '
         rlength = length - len(msg)
-        out = '-' * (rlength/2)
-        out+= msg + out
+        out  = '-' * (rlength/2)
+        out += msg + out
         out = console.red(out)
         if display:
             print out
@@ -156,20 +153,20 @@ def _report(*args, **kargs):
                 use_header = colored_header + ' -- ' + console.darkteal(_args)
                 _args = ''
             else:
-                _args = '  '+console.darkteal(_args)
+                _args = '  ' + console.darkteal(_args)
                 use_header = colored_header
     else:
         s = StringIO()
         args_as_text = pprint(args, s)
         args_as_text = s.getvalue()
-        _args = 'args=' + console.color(args_as_text).strip()+'\n'
+        _args = 'args=' + console.color(args_as_text).strip() + '\n'
     print use_header
     _args = _args + '\n' if _args else _args
     _kargs =  console.color(str(kargs)) if kargs else ''
     _kargs = _kargs +'\n' if _kargs else _kargs
     sep = ' '
     output= sep + _args + sep + _kargs
-    stream.write(output)
+    stream.write(output.strip()+'\n')
     stream.flush()
 
 def getReporter(**unused):
@@ -186,19 +183,21 @@ class Reporter(object):
         self.label = label
 
     def __getattr__(self, label):
-        return self.__class__(label)
+        return self.__class__('.'.join([self.label, label]))
 
     def _report(self,msg):
-        def mycolorize(msg):
+        def mycolorize(txt):
             """ """
             # .format() is not used because KeyError might happen
             # when using report(msg+str(some_dictionary))
-            return msg.replace('{red}',console_codes['red']).replace(
-                '{normal}', console_color['reset'])
+            return txt.replace('{red}',console_codes['red']).replace(
+                '{normal}', console_codes['reset'])
         print mycolorize('{red}' + self.label + '{normal}: ' + msg)
 
-    def _warn(self,msg):
-        return self._report(msg)
+    def _warn(self, msg):
+        warning = getattr(self,'WARNING')
+        return warning(msg)
+    warn = _warn
 
     def __call__(self, msg):
         return self._report(msg)

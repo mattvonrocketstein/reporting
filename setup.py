@@ -31,8 +31,4 @@ setup(
     download_url = base_url+'/tarball/pypi',
     packages     = ['report'],
     keywords     = ['report'],
-    install_requires=['pygments','goulash==0.5'],
-    #entry_points = {
-    #    'console_scripts': \
-    #    ['pkg_script = reporting.bin.module:fxn', ] }
     )
