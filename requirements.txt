@@ -1,0 +1,6 @@
+#
+# reporting/requirements.txt
+#
+# this is a library, not an application.
+# thus, all requirements are in setup.py
+#
