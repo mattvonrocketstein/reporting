@@ -21,7 +21,7 @@ base_url = 'https://github.com/mattvonrocketstein/reporting/'
 setup(
     name         = 'reporting',
     version      = __version__,
-    description  = '',
+    description  = 'Reporting is better than printing',
     author       = 'mattvonrocketstein',
     author_email = '$author@gmail',
     url          = base_url,
