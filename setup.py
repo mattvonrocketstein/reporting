@@ -25,7 +25,7 @@ setup(
     author       = 'mattvonrocketstein',
     author_email = '$author@gmail',
     url          = base_url,
-    download_url = base_url+'/tarball/pypi',
+    download_url = base_url+'/tarball/master',
     packages     = ['report'],
     keywords     = ['report'],
     install_requires = [

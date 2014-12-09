@@ -3,9 +3,11 @@
 import os, sys
 import unittest
 from StringIO import StringIO
-from contextlib import contextmanager
 
-from report import config, report, truncate_file_path, console, Reporter
+from report import report, truncate_file_path, console, Reporter
+
+# TODO: test it
+from report import config
 
 from pyparsing import (
     Literal, Word, Combine, Optional,
@@ -76,7 +78,6 @@ class Tests(unittest.TestCase):
 
     def test_method(self):
         self.kls.method(1,2,3)
-        output = self.get_output()
         self.assertOutputContains(
             self.kls.__class__.__name__+'.'+self.kls.method.__name__)
         self.assertEndsWith(TEST_MSG)
@@ -94,12 +95,12 @@ class Tests(unittest.TestCase):
 
     def test_static_method(self):
         self.kls.static_method(1,2,3)
-        output = self.get_output()
         # frame info for staticmethod does not include class info
         self.assertOutputContains('<??>.static_method')
 
     def test_version_import(self):
         from report.version import __version__
+        assert __version__
 
     def test_draw_line_basic(self):
         console.draw_line()
@@ -129,7 +130,6 @@ class Tests(unittest.TestCase):
         reporter = Reporter()
         msg = "testing vanilla Reporter"
         reporter(msg)
-        output = self.get_output()
         self.assertOutputContains(msg)
 
     def test_labeled_reporter_object(self):
@@ -137,7 +137,6 @@ class Tests(unittest.TestCase):
         reporter = Reporter(label)
         msg = "testing labeled Reporter"
         reporter(msg)
-        output = self.get_output()
         self.assertOutputContains(msg)
         self.assertStartsWith(label)
 
@@ -146,7 +145,6 @@ class Tests(unittest.TestCase):
         reporter = Reporter(label)
         msg = "testing labeled Reporter warning"
         reporter.warn(msg)
-        output = self.get_output()
         self.assertOutputContains(msg)
         self.assertStartsWith(label + '.WARNING')
 
@@ -156,6 +154,5 @@ class Tests(unittest.TestCase):
         reporter = reporter.some_sub_label
         msg = "testing nested labeled Reporter"
         reporter(msg)
-        output = self.get_output()
         self.assertOutputContains(msg)
         self.assertStartsWith(label+'.some_sub_label')

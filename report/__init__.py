@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 from pygments import highlight
 from pygments.lexers import JavascriptLexer, PythonLexer, PythonTracebackLexer
 from pygments.formatters import HtmlFormatter, Terminal256Formatter
-from pygments.console import colorize as console_color
 from pygments.console import codes as console_codes
 
 from goulash._inspect import getcaller
@@ -34,16 +33,20 @@ class config(object):
 
 if not sys.stdout.isatty():
     # let's not work too hard if there is no one
-    # to notice all the color
+    # to notice all the color.  note that stdout
+    # should NOT be a tty when pipes are used,
+    # which prevents color-codes from cluttering
+    # up "python foo.py > log.txt" style invocations
     console_color = lambda name, string: string
     stdout_row_length = lambda: 80
 else:
+    from pygments.console import colorize as console_color
     def stdout_row_length():
         """ returns the number of cols in the display.
             this is cached for CACHE_LENGTH amount of time,
             but after that it's recomputed.  this allows for
             terminal windows that are getting resized to behave
-            as expected
+            as expected and do some intelligent wrapping
         """
         if ROW_LEN_CACHE['stdout_row_length'] is None or \
            ROW_LEN_CACHE['timestamp'] < (datetime.now()-timedelta(seconds=10)):
@@ -106,7 +109,6 @@ class console:
         if display:
             print out
         return out
-console = console()
 
 # TODO: import this from goulash
 def truncate_file_path(file_name):
@@ -176,10 +178,6 @@ def getReporter(**unused):
     """ TODO: return a partial function """
     return _report
 
-report = getReporter()
-report.console = console
-report.highlight = highlight
-
 class Reporter(object):
     """ syntactic sugar for reporting """
     def __init__(self, label=u'>>'):
@@ -198,7 +196,7 @@ class Reporter(object):
         print mycolorize('{red}' + self.label + '{normal}: ' + msg)
 
     def _warn(self, msg):
-        warning = getattr(self,'WARNING')
+        warning = getattr(self, 'WARNING')
         return warning(msg)
     warn = _warn
 
@@ -206,3 +204,7 @@ class Reporter(object):
         return self._report(msg)
 
 simple = Reporter()
+report = getReporter()
+report.console = console
+report.highlight = highlight
+console = console()

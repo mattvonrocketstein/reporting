@@ -2,5 +2,7 @@
 # reporting/requirements.txt
 #
 # this is a library, not an application.
-# thus, all requirements are in setup.py
+# thus, all requirements (except for testing)
+# are in setup.py
 #
+mock
