@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 """ setup.py for report
 """
-
-""" setup.py for reporting
-"""
 import os, sys
 from setuptools import setup
 
@@ -31,4 +28,8 @@ setup(
     download_url = base_url+'/tarball/pypi',
     packages     = ['report'],
     keywords     = ['report'],
+    install_requires = [
+        'pygments',
+        'goulash',
+        ],
     )

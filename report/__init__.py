@@ -16,6 +16,8 @@ from pygments.console import codes as console_codes
 
 from goulash._inspect import getcaller
 
+from .version import __version__
+
 plex  = PythonLexer()
 jlex  = JavascriptLexer()
 tblex = PythonTracebackLexer()
