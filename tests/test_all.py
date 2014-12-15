@@ -1,11 +1,11 @@
 """ test_all
 """
 import os, sys
-import mock
+#import mock
 import unittest
 from StringIO import StringIO
 
-from report import report, console, Reporter
+from report import report, console, Reporter, Report
 from report.util import truncate_file_path
 
 # TODO: test it
@@ -36,22 +36,12 @@ class MyClass(object):
     def static_method(a, b, c):
         report(TEST_MSG)
 
-class Tests(unittest.TestCase):
-
-    def setUp(self):
-        self.fxn = function_name
-        self.kls = MyClass()
-        new_out, new_err = StringIO(), StringIO()
-        self.old_out, self.old_err = sys.stdout, sys.stderr
-        sys.stdout, sys.stderr = new_out, new_err
-        self.out = new_out
-        self.err = new_err
-
-    def tearDown(self):
-        sys.stdout, sys.stderr = self.old_out, self.old_err
-
+class BaseMixin(object):
     def get_output(self):
-        return uncolor(self.out.getvalue().strip())
+        return uncolor(self._get_output())
+
+    def _get_output(self):
+        return self.out.getvalue().strip()
 
     def assertOutputContains(self, x, err=None):
         output = self.get_output()
@@ -68,9 +58,52 @@ class Tests(unittest.TestCase):
         err = err or output
         self.assertTrue(output.startswith(x), err)
 
+class Tests(unittest.TestCase, BaseMixin):
+
+    def setUp(self):
+        self.fxn = function_name
+        self.kls = MyClass()
+        new_out, new_err = StringIO(), StringIO()
+        new_out.isatty = sys.stdout.isatty
+        self.old_out, self.old_err = sys.stdout, sys.stderr
+        sys.stdout, sys.stderr = new_out, new_err
+        self.out = new_out
+        self.err = new_err
+
+    def tearDown(self):
+        sys.stdout, sys.stderr = self.old_out, self.old_err
+
+    def test_config_inheritance(self):
+        from report.config import config as default_config
+        _default = default_config.USING_TTY
+        USING_TTY = not _default
+        _config = Config(dict(USING_TTY=USING_TTY))
+        _report = Report(config=_config)
+        self.assertEqual(_config.USING_TTY, USING_TTY)
+        self.assertEqual(_report.config.USING_TTY, USING_TTY)
+        self.assertEqual(_report.console.config.USING_TTY, USING_TTY)
+        self.assertEqual(_report.config, _config)
+        self.assertEqual(_report.console.config, _report.config)
+
     def test_simulated_pipe(self):
-        #with mock.patch('sys.stdout'):
-        pass
+        _report = Report(config=Config(dict(USING_TTY=False)))
+        self.assertEqual(_report.console.darkblue("testing"), "testing")
+        _report("simple message")
+        self.assertEqual(
+            self.get_output(),
+            self._get_output(),
+            )
+        _report("message", 'random extra argument', 'another one')
+        self.assertEqual(
+            self.get_output(),
+            self._get_output(),
+            )
+        _report("message", 'random extra arg', random_extra_kwarg='another one')
+        self.assertEqual(
+            self.get_output(),
+            self._get_output(),
+            )
+
 
     def test_report_with_args(self):
         # this behaviour is not really well defined, as in it might not be stable

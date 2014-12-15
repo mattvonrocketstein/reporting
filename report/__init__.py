@@ -17,21 +17,12 @@ from pygments.console import codes as console_codes
 from goulash._inspect import getcaller
 from .console import Console
 from .version import __version__
-from .util import console2html
+from .util import truncate_file_path, console2html
 from .config import Config
 
-jlex  = JavascriptLexer()
-tblex = PythonTracebackLexer()
-hfom  = HtmlFormatter()
-hfom2 = HtmlFormatter(cssclass="autumn")
 
-highlight = copy.copy(highlight)
-highlight.javascript = lambda code: highlight(code, jlex, Terminal256Formatter())
-highlight.python = lambda code: highlight(code, plex, Terminal256Formatter())
 
 ROW_LEN_CACHE = dict(timestamp=None, stdout_row_length=None)
-
-config = Config()
 
 def stdout_row_length(config):
     """ returns the number of cols in the display.
@@ -53,7 +44,7 @@ def stdout_row_length(config):
         ROW_LEN_CACHE['timestamp'] = datetime.now()
     return ROW_LEN_CACHE['stdout_row_length']
 
-from .util import truncate_file_path
+
 def frames_back(N=3):
     """ displays information about the caller's caller """
     # if self is a named argument in the locals, use
@@ -64,20 +55,21 @@ def frames_back(N=3):
     func_name   = caller_info['func_name']
     header      = (kls and kls.__name__) or '<??>'
     header      = header + '.' + func_name
-    file_name = truncate_file_path(file_name)
     return file_name, header
 
 class Report(object):
-    def __init__(self, _config, _console):
-        self.config = _config
-        self.console = _console
+
+    def __init__(self, config=None, console=None):
+        self.config = Config() if config is None else config
+        self.console = Console(self.config) if not console else console
 
     def __call__(self, *args, **kargs):
         """ reporting mechanism with inspection and colorized output """
         stream = kargs.pop('stream', sys.stdout)
         header = kargs.pop('header', '')
-        use_header = ""
+        use_header = header
         fname, caller = frames_back(kargs.pop('frames_back', 3))
+        fname = truncate_file_path(fname, self.config.MAX_FILE_COMPONENTS)
         colored_header = ' ' + self.console.darkblue(fname) + ' --  ' + self.console.blue(caller)
         extra_length = len(' + '+' --  ') #ugh
         header_length = len(fname+caller) + extra_length
@@ -96,19 +88,19 @@ class Report(object):
             # whenever terminal is wide enough to show both,
             # mash up the header with the other output
             if (len(_args+' -- ') + header_length) < stdout_row_length(self.config):
-                use_header = colored_header + ' -- ' + console.darkteal(_args)
+                use_header = colored_header + ' -- ' + self.console.darkteal(_args)
                 _args = ''
             else:
-                _args = '  ' + console.darkteal(_args)
+                _args = '  ' + self.console.darkteal(_args)
                 use_header = colored_header
         else:
             s = StringIO()
             args_as_text = pprint(args, s)
             args_as_text = s.getvalue()
-            _args = 'args=' + console.color(args_as_text).strip() + '\n'
+            _args = 'args=' + self.console.color(args_as_text).strip() + '\n'
         print use_header
         _args = _args + '\n' if _args else _args
-        _kargs =  console.color(str(kargs)) if kargs else ''
+        _kargs =  self.console.color(str(kargs)) if kargs else ''
         _kargs = _kargs +'\n' if _kargs else _kargs
         sep = ' '
         output= sep + _args + sep + _kargs
@@ -117,16 +109,16 @@ class Report(object):
 
 class Reporter(object):
     """ syntactic sugar for reporting """
-    def __init__(self, label=u'>>',config=None, console=None):
+    def __init__(self, label=u'>>', config=None, console=None):
         self.label = label
-        self.config = Config() if not config else config
+        self.config = Config() if config is None else config
         self.console = Console(self.config) if not console else console
         self.report = Report(self.config, self.console)
 
     def __getattr__(self, label):
         return self.__class__(
             '.'.join([self.label, label]),
-            config=self.config, console=self.console)
+            config = self.config, console=self.console)
 
     def _report(self, msg):
 
@@ -146,8 +138,7 @@ class Reporter(object):
     def __call__(self, msg):
         return self._report(msg)
 
-config = Config()
-console = Console(config)
+console = Console()#config)
 #simple = Reporter(config, console)
-report = Report(config, console)
+report = Report()#config, console)
 report.highlight = highlight
