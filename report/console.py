@@ -7,8 +7,7 @@ from pygments.lexers import JavascriptLexer, PythonLexer, PythonTracebackLexer
 from pygments.formatters import HtmlFormatter, Terminal256Formatter
 from pygments.console import colorize as _console_color
 
-from .util import console2html
-from .config import Config
+from report.config import Config
 
 plex  = PythonLexer()
 tblex = PythonTracebackLexer()
@@ -20,7 +19,7 @@ hfom  = HtmlFormatter()
 hfom2 = HtmlFormatter(cssclass="autumn")
 
 class Console(object):
-    # from the pygments code--
+    # from the pygments code:
     #      dark_colors  = [
     #        "black", "darkred",
     #        "darkgreen", "brown",
@@ -34,7 +33,7 @@ class Console(object):
     #      codes["darkyellow"] = codes["brown"]
     #      codes["fuscia"]     = codes["fuchsia"]
     #      codes["white"]      = codes["bold"]
-    html = staticmethod(console2html)
+
 
     def __init__(self, config=None):
         self.config = Config() if config is None else config

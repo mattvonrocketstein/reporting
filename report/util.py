@@ -7,12 +7,6 @@ from datetime import datetime, timedelta
 
 ROW_LEN_CACHE = dict(timestamp=None, stdout_row_length=None)
 
-def console2html(txt):
-    """ this is dumb, but doing more would mean requiring
-        ansi2html. more requirements means more problems..
-    """
-    return txt.replace('\n', '<br/>')
-
 # TODO: move this to goulash?
 def truncate_file_path(file_name, max_file_components=None):
     max_file_components = max_file_components or config.MAX_FILE_COMPONENTS

@@ -19,7 +19,7 @@ from goulash._inspect import getcaller
 from report.console import Console
 from report.config import Config
 from report.version import __version__
-from report.util import truncate_file_path, console2html, stdout_row_length
+from report.util import truncate_file_path, stdout_row_length
 
 
 def frames_back(N=3):
