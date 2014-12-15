@@ -5,10 +5,9 @@ import os, sys
 import unittest
 from StringIO import StringIO
 
-from report import report, console, Reporter, Report
+from report import report, Reporter, Report
 from report.util import truncate_file_path
-
-# TODO: test it
+from report.console import Console
 from report.config import Config
 
 from pyparsing import (
@@ -61,6 +60,7 @@ class BaseMixin(object):
 class Tests(unittest.TestCase, BaseMixin):
 
     def setUp(self):
+        self.console = Console()
         self.fxn = function_name
         self.kls = MyClass()
         new_out, new_err = StringIO(), StringIO()
@@ -104,12 +104,37 @@ class Tests(unittest.TestCase, BaseMixin):
             self._get_output(),
             )
 
-
     def test_report_with_args(self):
         # this behaviour is not really well defined, as in it might not be stable
         # so here we will just exercise the function
         report("message",'random extra argument', 'another one')
         #output = self.get_output()
+
+    def test_report_with_format_hints(self):
+        # this behaviour is not really well defined, as in it might not be stable
+        # so here we will just exercise the function
+        report("message {fstring}", fstring='formatting_string')
+        self.assertOutputContains("message formatting_string")
+
+    def test_report_with_stream(self):
+        self.fail('test not written yet')
+
+    def test_console_tb(self):
+        import traceback
+        try:
+            1/0
+        except:
+            self.console.colortb(traceback.format_exc())
+
+    def test_console_print(self):
+        self.console.darkblue('hello world', _print=True)
+        self.assertOutputContains('hello world')
+
+    def test_console_color(self):
+        from report.console import console_color
+        one = console_color('red', 'hello world', Config(USING_TTY=False))
+        two = console_color('red', 'hello world', Config(USING_TTY=True))
+        self.assertNotEqual(one, two)
 
     def test_function(self):
         self.fxn(1, 2, 3)
@@ -117,9 +142,9 @@ class Tests(unittest.TestCase, BaseMixin):
         self.assertEndsWith(TEST_MSG)
 
     def test_method(self):
-        self.kls.method(1,2,3)
+        self.kls.method(1, 2, 3)
         self.assertOutputContains(
-            self.kls.__class__.__name__+'.'+self.kls.method.__name__)
+            self.kls.__class__.__name__ + '.' + self.kls.method.__name__)
         self.assertEndsWith(TEST_MSG)
         self.assertStartsWith(
             truncate_file_path(__file__))
@@ -131,29 +156,29 @@ class Tests(unittest.TestCase, BaseMixin):
         output = self.get_output()
         output = output.split('\n')
         print output
-        self.assertEqual(output[-1],marker)
+        self.assertEqual(output[-1], marker)
 
     def test_static_method(self):
-        self.kls.static_method(1,2,3)
+        self.kls.static_method(1, 2, 3)
         # frame info for staticmethod does not include class info
         self.assertOutputContains('<??>.static_method')
 
     def test_version_import(self):
+        # nothing to test, just making sure the import is safe
         from report.version import __version__
         assert __version__
 
     def test_draw_line_basic(self):
-        console.draw_line()
+        self.console.draw_line()
         output = self.get_output()
         self.assertEqual(len(output), 80)
 
     def test_draw_line_msg(self):
         msg = 'hello world'
-        console.draw_line(msg=msg)
+        self.console.draw_line(msg=msg)
         output = self.get_output()
         self.assertTrue(len(output)<80)
         self.assertOutputContains(msg)
-
 
     def test_external_module(self):
         import importlib

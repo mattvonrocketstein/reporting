@@ -1,3 +1,3 @@
 """ report.version
 """
-__version__ = .31
+__version__ = .32

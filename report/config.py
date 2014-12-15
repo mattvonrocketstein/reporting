@@ -5,7 +5,14 @@ import sys
 
 class BaseConfig(dict):
     """ move to goulash """
-    def __init__(self, dct={}):
+    def __init__(self, *args, **kargs):
+        if args:
+            err=('if arguments are provided there should be '
+                 'exactly one and it should be a dictionary')
+            assert len(args)==1 and isinstance(args[0], dict), err
+            dct = args[0]
+        else:
+            dct = kargs
         for k,v in dct.items():
             setattr(self, k, v)
 
