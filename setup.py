@@ -18,6 +18,8 @@ from version import __version__
 sys.path.pop()
 
 base_url = 'https://github.com/mattvonrocketstein/reporting/'
+install_requires = ['pygments', 'goulash',]
+
 setup(
     name         = 'reporting',
     version      = __version__,
@@ -28,8 +30,5 @@ setup(
     download_url = base_url+'/tarball/master',
     packages     = ['report'],
     keywords     = ['report'],
-    install_requires = [
-        'pygments',
-        'goulash',
-        ],
+    install_requires = install_requires,
     )

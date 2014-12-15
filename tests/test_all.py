@@ -1,13 +1,15 @@
 """ test_all
 """
 import os, sys
+import mock
 import unittest
 from StringIO import StringIO
 
-from report import report, truncate_file_path, console, Reporter
+from report import report, console, Reporter
+from report.util import truncate_file_path
 
 # TODO: test it
-from report import config
+from report.config import Config
 
 from pyparsing import (
     Literal, Word, Combine, Optional,
@@ -29,6 +31,7 @@ def function_name(a,b,c):
 class MyClass(object):
     def method(self,a,b,c):
         report(TEST_MSG)
+
     @staticmethod
     def static_method(a, b, c):
         report(TEST_MSG)
@@ -64,6 +67,10 @@ class Tests(unittest.TestCase):
         output = self.get_output()
         err = err or output
         self.assertTrue(output.startswith(x), err)
+
+    def test_simulated_pipe(self):
+        #with mock.patch('sys.stdout'):
+        pass
 
     def test_report_with_args(self):
         # this behaviour is not really well defined, as in it might not be stable
