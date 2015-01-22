@@ -2,6 +2,26 @@
 """
 
 import sys
+import logging
+
+# create logger with 'spam_application'
+logger = logging.getLogger('reporting')
+logger.setLevel(logging.DEBUG)
+
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+#ch.setLevel(logging.ERROR)
+ch.setLevel(logging.ERROR)
+
+# create formatter and add it to the handlers
+_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+formatter = logging.Formatter(_format)
+
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+
+logger.info('creating an instance of auxiliary_module.Auxiliary')
 
 class BaseConfig(dict):
     """ move to goulash """
@@ -25,5 +45,6 @@ class Config(BaseConfig):
     # up "python foo.py > log.txt" style invocations
     USING_TTY = sys.stdout.isatty()
     MAX_FILE_COMPONENTS = 4
+
 
 config = Config()

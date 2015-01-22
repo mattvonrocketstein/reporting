@@ -49,6 +49,14 @@ class Report(object):
         self.console = Console(self.config) if not console else console
 
     def __call__(self, *args, **kargs):
+        stream, output = self._get_raw_output(*args, **kargs)
+        self.write_output(stream, output)
+
+    def write_output(self, stream, output):
+        stream.write(output.strip()+'\n')
+        stream.flush()
+
+    def _get_raw_output(self, *args, **kargs):
         stream = kargs.pop('stream', sys.stdout)
         header = kargs.pop('header', '')
         use_header = header
@@ -89,8 +97,7 @@ class Report(object):
         _kargs = _kargs +'\n' if _kargs else _kargs
         sep = ' '
         output = sep + _args + sep + _kargs
-        stream.write(output.strip()+'\n')
-        stream.flush()
+        return stream, output
 
 class Reporter(object):
     """ Usage:

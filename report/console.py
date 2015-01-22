@@ -19,6 +19,7 @@ hfom  = HtmlFormatter()
 hfom2 = HtmlFormatter(cssclass="autumn")
 
 class Console(object):
+
     # from the pygments code:
     #      dark_colors  = [
     #        "black", "darkred",
@@ -33,7 +34,6 @@ class Console(object):
     #      codes["darkyellow"] = codes["brown"]
     #      codes["fuscia"]     = codes["fuchsia"]
     #      codes["white"]      = codes["bold"]
-
 
     def __init__(self, config=None):
         self.config = Config() if config is None else config
