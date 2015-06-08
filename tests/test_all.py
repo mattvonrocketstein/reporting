@@ -36,15 +36,17 @@ class MyClass(object):
         report(TEST_MSG)
 
 class BaseMixin(object):
-    def get_output(self):
-        return uncolor(self._get_output())
+    def get_output(self, *args, **kargs):
+        return uncolor(self._get_output(*args, **kargs))
 
-    def _get_output(self):
-        return self.out.getvalue().strip()
+    def _get_output(self, stream=None):
+        if stream is None:
+            stream = self.out
+        return stream.getvalue().strip()
 
-    def assertOutputContains(self, x, err=None):
-        output = self.get_output()
-        err = err or "{0} not in {1}".format(x,output)
+    def assertOutputContains(self, x, err=None, stream=None):
+        output = self.get_output(stream)
+        err = err or "{0} not in {1}".format(x, output)
         self.assertTrue(x in output, err)
 
     def assertEndsWith(self, x, err=None):
@@ -107,7 +109,7 @@ class Tests(unittest.TestCase, BaseMixin):
     def test_report_with_args(self):
         # this behaviour is not really well defined, as in it might not be stable
         # so here we will just exercise the function
-        report("message",'random extra argument', 'another one')
+        report("message", 'random extra argument', 'another one')
         #output = self.get_output()
 
     def test_report_with_format_hints(self):
@@ -117,7 +119,8 @@ class Tests(unittest.TestCase, BaseMixin):
         self.assertOutputContains("message formatting_string")
 
     def test_report_with_stream(self):
-        self.fail('test not written yet')
+        report("message {fstring}", fstring='formatting_string', stream= sys.stderr)
+        self.assertOutputContains("message formatting_string", stream=self.err)
 
     def test_console_tb(self):
         import traceback

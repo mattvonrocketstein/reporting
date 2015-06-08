@@ -1,4 +1,7 @@
+""" demo
+"""
 from report import report
+
 def module_level_function():
     report("hello module!")
 
